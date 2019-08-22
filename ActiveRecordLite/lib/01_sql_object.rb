@@ -86,25 +86,44 @@ class SQLObject
 
   def attribute_values
     # ...
-    self.class.columns.map {|column| self.send(column)dfs}
+    self.class.columns.map {|column| self.send(column)}
   end
-  
+
   def insert
-    num_questions = ["?"] * self.class.columns.length
     # ...
+    columned = self.class.columns.map(&:to_s).join(", ")
+    num_questions = (['?'] * self.class.columns.length).join(" ,")
     DBConnection.execute(<<-SQL, *attribute_values)
       INSERT INTO
-        #{self.table_name} (#{*columns})
+        #{self.class.table_name} (#{columned})
       VALUES
-          (#{*num_questions})
+        (#{num_questions})
     SQL
+
+    self.id = DBConnection.last_insert_row_id
   end
 
   def update
     # ...
+    tab_name = self.class.table_name
+    #col_name = self.class.columns.map {|column| "#{column} = ?"}.join(", ")
+    #::columns to #{attr_name} = ?
+    #our way is better
+    col_name = self.class.columns.map(&:to_s).join(" = ?, ")
+    col_name += " = ?"
+
+    DBConnection.execute(<<-SQL, *attribute_values, id)
+      UPDATE
+        #{tab_name}
+      SET
+        #{col_name}
+      WHERE
+        #{tab_name}.id = ?
+    SQL
   end
 
   def save
     # ...
+    id.nil? ? insert : update
   end
 end
