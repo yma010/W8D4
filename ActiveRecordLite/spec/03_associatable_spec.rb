@@ -5,9 +5,9 @@ describe 'AssocOptions' do
     it 'provides defaults' do
       options = BelongsToOptions.new('house')
 
-      expect(options.foreign_key).to eq(:house_id)
-      expect(options.class_name).to eq('House')
-      expect(options.primary_key).to eq(:id)
+      expect(options.foreign_key).to eq(:house_id) #interpolate + id.to sym
+      expect(options.class_name).to eq('House') #capitalize name
+      expect(options.primary_key).to eq(:id) # :id
     end
 
     it 'allows overrides' do
